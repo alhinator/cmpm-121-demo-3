@@ -2,8 +2,7 @@
 // @deno-types="npm:@types/leaflet@^1.9.14"
 import leaflet from "leaflet";
 import * as Pl from "./player.ts";
-import * as Cache from "./cache.ts";
-import * as C from "./cell.ts";
+import Board from "./board.ts";
 
 // Style sheets
 import "leaflet/dist/leaflet.css";
@@ -16,7 +15,7 @@ export const listener = new EventTarget();
 
 //Tunable params - all caps names are NOT required by leaflet conventions
 export const SETTINGS = {
-  center: leaflet.latLng(36.98949379578401, -122.06277128548504),
+  center: leaflet.latLng(0, 0),
   zoom: 18,
   minZoom: 17,
   maxZoom: 19,
@@ -25,6 +24,7 @@ export const SETTINGS = {
   TILE_DEGREES: 1e-4,
   VISION_RANGE: 8,
   CACHE_SPAWN_PROBABILITY: 0.1,
+  PLAYER_START: leaflet.latLng(36.98949379578401, -122.06277128548504),
 };
 
 const mainMap = leaflet.map(document.getElementById("map")!, SETTINGS);
@@ -35,18 +35,17 @@ leaflet
       '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   })
   .addTo(mainMap);
+mainMap.panTo(SETTINGS.PLAYER_START);
 
 const player: Pl.Player = Pl.generateNew(mainMap);
+const mainBoard = new Board(mainMap, player);
 
 const statusPanel = document.querySelector<HTMLDivElement>("#statusPanel")!;
 statusPanel.innerText = "Current Coins: 0";
 listener.addEventListener("points-changed", () => {
-  statusPanel.innerText = "Current Coins: " + player.points;
+  statusPanel.innerText = "Current Coins: " + player.points.length;
 });
 
-Cache.displayLocal(
-  SETTINGS.VISION_RANGE,
-  C.latLngToCell(player.position),
-  mainMap,
-  player,
-);
+const seenCells = mainBoard.getCellsNearPoint(player.position);
+//console.log(seenCells)
+mainBoard.drawCells(seenCells);

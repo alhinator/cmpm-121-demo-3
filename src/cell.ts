@@ -1,21 +1,39 @@
-import leaflet from "leaflet";
-import { SETTINGS } from "./main.ts";
+import luck from "./luck.ts";
 
+export interface Coin {
+  original: Cell;
+  serial: number;
+}
 export interface Cell {
-  row: number;
-  col: number;
+  readonly row: number;
+  readonly col: number;
+  coins: Coin[];
+}
+export function createCoinArray(_c: Cell): Coin[] {
+  const retVal: Coin[] = [];
+  const pointValue = Math.floor(
+    luck([_c.row, _c.col, "initialValue"].toString()) * 100,
+  );
+  for (let i = 0; i < pointValue; i++) {
+    retVal.push({
+      original: _c,
+      serial: i,
+    });
+  }
+
+  return retVal;
 }
 
-export function cellToLatLng(_c: Cell): leaflet.LatLng {
-  return leaflet.latLng(
-    SETTINGS.center.lat + _c.col * SETTINGS.TILE_DEGREES,
-    SETTINGS.center.lng + _c.row * SETTINGS.TILE_DEGREES,
+export function coinToString(_coin: Coin): string {
+  return (
+    "" +
+    _coin.original.row +
+    ":" +
+    _coin.original.col +
+    "#" +
+    _coin.serial
   );
 }
-
-export function latLngToCell(_p: leaflet.LatLng): Cell {
-  return {
-    row: (_p.lat - SETTINGS.center.lat) / SETTINGS.TILE_DEGREES,
-    col: (_p.lng - SETTINGS.center.lng) / SETTINGS.TILE_DEGREES,
-  };
+export function cellToString(_cell: Cell): string {
+  return "" + _cell.row + ":" + _cell.col + "#c:" + _cell.coins.length;
 }
