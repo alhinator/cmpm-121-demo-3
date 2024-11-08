@@ -30,6 +30,7 @@ export function giveCoin(_p: Player, _coin: Coin) {
   _p.points.push(_coin);
   listener.dispatchEvent(pointsChanged);
 }
+
 export function takeCoin(_p: Player) {
   const retVal = _p.points.pop();
   if (retVal) {

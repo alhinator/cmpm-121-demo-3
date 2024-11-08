@@ -47,5 +47,4 @@ listener.addEventListener("points-changed", () => {
 });
 
 const seenCells = mainBoard.getCellsNearPoint(player.position);
-//console.log(seenCells)
 mainBoard.drawCells(seenCells);

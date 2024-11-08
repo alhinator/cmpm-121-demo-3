@@ -2,7 +2,11 @@ import leaflet from "leaflet";
 import luck from "./luck.ts";
 import { SETTINGS } from "./main.ts";
 import { giveCoin, Player, takeCoin } from "./player.ts";
-import { Cell, coinToString, createCoinArray } from "./cell.ts";
+import {
+  Cell,
+  coinToString as _coinToString,
+  createCoinArray,
+} from "./cell.ts";
 
 export default class Board {
   private map: leaflet.Map;
@@ -28,8 +32,6 @@ export default class Board {
   public getCellsNearPoint(point: leaflet.LatLng): Cell[] {
     const retVal: Cell[] = [];
     const origin = this.latLngToCell(point);
-    console.log(origin);
-    //this.map.panTo()
     for (let i = -SETTINGS.VISION_RANGE; i < SETTINGS.VISION_RANGE; i++) {
       for (
         let j = -SETTINGS.VISION_RANGE;
@@ -76,11 +78,6 @@ export default class Board {
               "#value",
             )!.innerHTML = _c.coins.length.toString();
             giveCoin(this.player, gotten);
-            console.log(
-              "moved " +
-                coinToString(gotten) +
-                " to player's inventory.",
-            );
           }
         });
 
@@ -94,12 +91,6 @@ export default class Board {
               "#value",
             )!.innerHTML = _c.coins.length.toString();
             _c.coins.push(gotten);
-            console.log(
-              "moved " +
-                coinToString(gotten) +
-                " out of player's inventory, into cell " +
-                _c,
-            );
           }
         });
 

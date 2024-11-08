@@ -9,6 +9,7 @@ export interface Cell {
   readonly col: number;
   coins: Coin[];
 }
+
 export function createCoinArray(_c: Cell): Coin[] {
   const retVal: Coin[] = [];
   const pointValue = Math.floor(
@@ -34,6 +35,7 @@ export function coinToString(_coin: Coin): string {
     _coin.serial
   );
 }
+
 export function cellToString(_cell: Cell): string {
   return "" + _cell.row + ":" + _cell.col + "#c:" + _cell.coins.length;
 }
