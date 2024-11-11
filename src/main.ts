@@ -48,3 +48,10 @@ listener.addEventListener("points-changed", () => {
 
 const seenCaches = mainBoard.getCachesNearPoint(player.position);
 mainBoard.drawCaches(seenCaches);
+
+const _movementButtons = {
+  north: document.getElementById("north"),
+  south: document.getElementById("south"),
+  east: document.getElementById("east"),
+  west: document.getElementById("west"),
+};

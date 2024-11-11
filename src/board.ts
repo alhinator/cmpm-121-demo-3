@@ -7,9 +7,11 @@ import { Cell, Geocache } from "./cell.ts";
 export default class Board {
   private map: leaflet.Map;
   private player: Player;
-  private readonly knownCaches: Map<string, Geocache>;
+  private readonly visibleCaches: Map<string, Geocache>;
+  private readonly savedCaches: Map<string, string>;
   constructor(_m: leaflet.Map, _p: Player) {
-    this.knownCaches = new Map<string, Geocache>();
+    this.visibleCaches = new Map<string, Geocache>();
+    this.savedCaches = new Map<string, string>();
     this.map = _m;
     this.player = _p;
   }
@@ -18,11 +20,11 @@ export default class Board {
     const { row, col } = _c;
     const key = [row, col].toString();
 
-    if (!this.knownCaches.get(key)) {
-      //GET MEMENTO
-      this.knownCaches.set(key, new Geocache(row, col));
+    if (!this.visibleCaches.get(key)) {
+      const mem = this.savedCaches.get(key);
+      this.visibleCaches.set(key, new Geocache(row, col, mem));
     }
-    return this.knownCaches.get(key)!;
+    return this.visibleCaches.get(key)!;
   }
 
   public getCachesNearPoint(point: leaflet.LatLng): Geocache[] {
@@ -125,5 +127,16 @@ export default class Board {
       [rightDn.lat, rightDn.lng],
     ]);
     return bounds;
+  }
+
+  saveCaches() {
+    this.visibleCaches.forEach((element) => {
+      const { row, col } = element.cell;
+      const key = [row, col].toString();
+      this.savedCaches.set(key, element.toMemento());
+    });
+  }
+  clearCaches() {
+    this.visibleCaches.clear();
   }
 }

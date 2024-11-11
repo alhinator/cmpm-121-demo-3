@@ -13,6 +13,7 @@ export interface Player {
 // }
 
 export const pointsChanged: Event = new Event("points-changed");
+export const playerMoved: Event = new Event("player-moved");
 
 export function generateNew(_map: leaflet.Map): Player {
   const tmp: Player = {
@@ -37,4 +38,17 @@ export function takeCoin(_p: Player) {
     listener.dispatchEvent(pointsChanged);
   }
   return retVal;
+}
+
+export function moveInDirection(
+  _p: Player,
+  deltaLat: number,
+  deltaLng: number,
+) {
+  _p.position = leaflet.latLng(
+    _p.position.lat + deltaLat,
+    _p.position.lng + deltaLng,
+  );
+  _p.marker.setLatLng(_p.position);
+  listener.dispatchEvent(playerMoved);
 }
