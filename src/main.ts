@@ -46,5 +46,5 @@ listener.addEventListener("points-changed", () => {
   statusPanel.innerText = "Current Coins: " + player.points.length;
 });
 
-const seenCells = mainBoard.getCellsNearPoint(player.position);
-mainBoard.drawCells(seenCells);
+const seenCaches = mainBoard.getCachesNearPoint(player.position);
+mainBoard.drawCaches(seenCaches);

@@ -1,4 +1,5 @@
 import luck from "./luck.ts";
+import { Memento } from "./memento.ts";
 
 export interface Coin {
   original: Cell;
@@ -7,10 +8,24 @@ export interface Coin {
 export interface Cell {
   readonly row: number;
   readonly col: number;
-  coins: Coin[];
 }
 
-export function createCoinArray(_c: Cell): Coin[] {
+export class Geocache implements Memento<string, Coin[]> {
+  cell: Cell;
+  coins: Coin[];
+  constructor(_row: number, _col: number, _mem?: string) {
+    this.cell = { row: _row, col: _col };
+    this.coins = _mem ? this.fromMemento(_mem) : createCoinArray(this.cell);
+  }
+  toMemento(): string {
+    return JSON.stringify(this.coins);
+  }
+  fromMemento(memento: string): Coin[] {
+    return JSON.parse(memento);
+  }
+}
+
+function createCoinArray(_c: Cell): Coin[] {
   const retVal: Coin[] = [];
   const pointValue = Math.floor(
     luck([_c.row, _c.col, "initialValue"].toString()) * 100,
@@ -36,6 +51,8 @@ export function coinToString(_coin: Coin): string {
   );
 }
 
-export function cellToString(_cell: Cell): string {
-  return "" + _cell.row + ":" + _cell.col + "#c:" + _cell.coins.length;
+export function GeocacheToDisplayString(_geo: Geocache): string {
+  return (
+    "" + _geo.cell.row + ":" + _geo.cell.col + "#c:" + _geo.coins.length
+  );
 }
