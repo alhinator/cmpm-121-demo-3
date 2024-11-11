@@ -39,19 +39,39 @@ mainMap.panTo(SETTINGS.PLAYER_START);
 
 const player: Pl.Player = Pl.generateNew(mainMap);
 const mainBoard = new Board(mainMap, player);
+mainBoard.drawCaches();
 
 const statusPanel = document.querySelector<HTMLDivElement>("#statusPanel")!;
 statusPanel.innerText = "Current Coins: 0";
 listener.addEventListener("points-changed", () => {
   statusPanel.innerText = "Current Coins: " + player.points.length;
 });
-
-const seenCaches = mainBoard.getCachesNearPoint(player.position);
-mainBoard.drawCaches(seenCaches);
+listener.addEventListener("player-moved", () => {
+  mainBoard.saveCaches();
+  mainBoard.clearCaches();
+  mainBoard.drawCaches();
+});
 
 const _movementButtons = {
-  north: document.getElementById("north"),
-  south: document.getElementById("south"),
-  east: document.getElementById("east"),
-  west: document.getElementById("west"),
+  north: document.getElementById("north")!,
+  south: document.getElementById("south")!,
+  east: document.getElementById("east")!,
+  west: document.getElementById("west")!,
 };
+
+_movementButtons.north.addEventListener(
+  "click",
+  () => Pl.moveInDirection(player, SETTINGS.TILE_DEGREES, 0),
+);
+_movementButtons.south.addEventListener(
+  "click",
+  () => Pl.moveInDirection(player, -SETTINGS.TILE_DEGREES, 0),
+);
+_movementButtons.east.addEventListener(
+  "click",
+  () => Pl.moveInDirection(player, 0, SETTINGS.TILE_DEGREES),
+);
+_movementButtons.west.addEventListener(
+  "click",
+  () => Pl.moveInDirection(player, 0, -SETTINGS.TILE_DEGREES),
+);

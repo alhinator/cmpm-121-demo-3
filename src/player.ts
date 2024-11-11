@@ -52,3 +52,9 @@ export function moveInDirection(
   _p.marker.setLatLng(_p.position);
   listener.dispatchEvent(playerMoved);
 }
+
+export function moveToPosition(_p: Player, _pos: leaflet.LatLng) {
+  _p.position = _pos;
+  _p.marker.setLatLng(_p.position);
+  listener.dispatchEvent(playerMoved);
+}

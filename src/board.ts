@@ -9,9 +9,11 @@ export default class Board {
   private player: Player;
   private readonly visibleCaches: Map<string, Geocache>;
   private readonly savedCaches: Map<string, string>;
+  private rectangles: leaflet.Rectangle[];
   constructor(_m: leaflet.Map, _p: Player) {
     this.visibleCaches = new Map<string, Geocache>();
     this.savedCaches = new Map<string, string>();
+    this.rectangles = [];
     this.map = _m;
     this.player = _p;
   }
@@ -56,12 +58,13 @@ export default class Board {
     const bounds = this.cellToBounds(_g.cell);
     const tmp = leaflet.rectangle(bounds);
     tmp.addTo(this.map);
+    this.rectangles.push(tmp);
     // Handle interactions with the cache
     tmp.bindPopup(() => {
       // The popup offers a description and button
       const popupDiv = document.createElement("div");
       popupDiv.innerHTML = `
-                  <div>There is a cache here at "${_g.cell.col},${_g.cell.row}". It has value <span id="value">${_g.coins.length}</span>.</div>
+                  <div>There is a cache here at "${_g.cell.col},${_g.cell.row}". It has <span id="value">${_g.coins.length}</span> coins inside.</div>
                   <button id="take">Take!</button>
                   <button id="give">Give!</button>`;
 
@@ -75,6 +78,7 @@ export default class Board {
               "#value",
             )!.innerHTML = _g.coins.length.toString();
             giveCoin(this.player, gotten);
+            _g.touched = true;
           }
         });
 
@@ -88,13 +92,15 @@ export default class Board {
               "#value",
             )!.innerHTML = _g.coins.length.toString();
             _g.coins.push(gotten);
+            _g.touched = true;
           }
         });
 
       return popupDiv;
     });
   }
-  public drawCaches(_gs: Geocache[]) {
+  public drawCaches() {
+    const _gs = this.getCachesNearPoint(this.player.position);
     _gs.forEach((element) => {
       this.drawAt(element);
     });
@@ -131,12 +137,20 @@ export default class Board {
 
   saveCaches() {
     this.visibleCaches.forEach((element) => {
-      const { row, col } = element.cell;
-      const key = [row, col].toString();
-      this.savedCaches.set(key, element.toMemento());
+      //we don't need to save the state of untouched caches, as they will just regenerate deterministically.
+      if (element.touched) {
+        const { row, col } = element.cell;
+        const key = [row, col].toString();
+        this.savedCaches.set(key, element.toMemento());
+      }
     });
+    console.log(this.savedCaches);
   }
   clearCaches() {
     this.visibleCaches.clear();
+    this.rectangles.forEach((rect) => {
+      rect.remove();
+    });
+    this.rectangles = [];
   }
 }

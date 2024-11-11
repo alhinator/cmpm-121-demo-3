@@ -13,9 +13,11 @@ export interface Cell {
 export class Geocache implements Memento<string, Coin[]> {
   cell: Cell;
   coins: Coin[];
+  touched: boolean;
   constructor(_row: number, _col: number, _mem?: string) {
     this.cell = { row: _row, col: _col };
     this.coins = _mem ? this.fromMemento(_mem) : createCoinArray(this.cell);
+    this.touched = false;
   }
   toMemento(): string {
     return JSON.stringify(this.coins);
