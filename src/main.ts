@@ -107,14 +107,15 @@ _controlButtons.reset.addEventListener("click", () => {
   }
 });
 
+mainMap.on("locationfound", (e) => {
+  Pl.moveToPosition(player, e.latlng);
+});
+mainMap.on("locationerror", () => {
+  alert("failed to get location.");
+});
+
 listener.addEventListener("follow-player-true", () => {
   mainMap.locate({ setView: true, watch: true });
-  mainMap.on("locationfound", (e) => {
-    Pl.moveToPosition(player, e.latlng);
-  });
-  mainMap.on("locationerror", () => {
-    alert("failed to get location.");
-  });
 });
 
 listener.addEventListener("follow-player-false", () => {
