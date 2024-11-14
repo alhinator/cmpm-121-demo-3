@@ -53,11 +53,12 @@ h1 {
   margin: 0.5em;
   padding: 0.5em;
   width: fit-content;
-  height: 1.5em;
+  max-width: 50%;
+  height: fit-content;
   border: 0.05em solid green;
   justify-content: center;
   justify-self: center;
-  display: flex;
+  flex-wrap: wrap-reverse;
 }
 
 #map {
@@ -90,6 +91,8 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
   width: fit-content;
+  height: fit-content;
+  display: inline-block;
 }
 
 button:hover {

@@ -10,6 +10,7 @@ import "./style.css";
 
 // Fix missing marker images
 import "./leafletWorkaround.ts";
+import { coinArrayToString } from "./cell.ts";
 
 export const listener = new EventTarget();
 export const saveEvent: Event = new Event("save-state");
@@ -43,11 +44,7 @@ const player: Pl.Player = Pl.generateNew(mainMap);
 const mainBoard = new Board(mainMap, player);
 
 const statusPanel = document.querySelector<HTMLDivElement>("#statusPanel")!;
-statusPanel.innerText = "Current Coins: 0";
-listener.addEventListener("points-changed", () => {
-  statusPanel.innerText = "Current Coins: " + player.points.length;
-  listener.dispatchEvent(saveEvent);
-});
+statusPanel.setAttribute("verbosee", "false");
 
 const _movementButtons = {
   north: document.getElementById("north")!,
@@ -58,7 +55,13 @@ const _movementButtons = {
 const _controlButtons = {
   sensor: document.getElementById("sensor")!,
   reset: document.getElementById("reset")!,
+  viewCoins: document.getElementById("viewCoins")!,
 };
+
+listener.addEventListener("points-changed", () => {
+  statusPanel.innerText = "Current Coins: " + player.points.length;
+  listener.dispatchEvent(saveEvent);
+});
 
 listener.addEventListener("player-moved", () => {
   mainMap.panTo(player.position);
@@ -122,7 +125,37 @@ listener.addEventListener("clear-state", () => {
   Pl.clearData(player);
 });
 
+_controlButtons.viewCoins.addEventListener("click", () => {
+  const verbosee = statusPanel.getAttribute("verbosee");
+
+  if (verbosee == "true") {
+    listener.dispatchEvent(Pl.pointsChanged);
+    statusPanel.setAttribute("verbosee", "false");
+  } else {
+    statusPanel.innerHTML = `<p>Owned Coins:</p>` +
+      coinArrayToString(player.points) + `<p>--------</p>`;
+    const coinClickables = statusPanel.querySelectorAll<HTMLButtonElement>(
+      "#coinable",
+    )!;
+    coinClickables.forEach((element) => {
+      element.addEventListener("click", () => {
+        const r = parseInt(element.getAttribute("og_row")!);
+        const c = parseInt(element.getAttribute("og_col")!);
+        console.log({ r, c });
+        mainMap.panTo(
+          mainBoard.cellToLatLng({
+            row: r,
+            col: c,
+          }),
+        );
+      });
+    });
+    statusPanel.setAttribute("verbosee", "true");
+  }
+});
+
 //-------------------------------
+
 Pl.setMode(player, player.mode);
 listener.dispatchEvent(Pl.pointsChanged);
 mainBoard.drawCaches();
