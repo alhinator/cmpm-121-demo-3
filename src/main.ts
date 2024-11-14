@@ -12,6 +12,8 @@ import "./style.css";
 import "./leafletWorkaround.ts";
 
 export const listener = new EventTarget();
+export const saveEvent: Event = new Event("save-state");
+export const clearEvent: Event = new Event("clear-state");
 
 //Tunable params - all caps names are NOT required by leaflet conventions
 export const SETTINGS = {
@@ -35,21 +37,16 @@ leaflet
       '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   })
   .addTo(mainMap);
-mainMap.panTo(SETTINGS.PLAYER_START);
 
 const player: Pl.Player = Pl.generateNew(mainMap);
+
 const mainBoard = new Board(mainMap, player);
-mainBoard.drawCaches();
 
 const statusPanel = document.querySelector<HTMLDivElement>("#statusPanel")!;
 statusPanel.innerText = "Current Coins: 0";
 listener.addEventListener("points-changed", () => {
   statusPanel.innerText = "Current Coins: " + player.points.length;
-});
-listener.addEventListener("player-moved", () => {
-  mainBoard.saveCaches();
-  mainBoard.clearCaches();
-  mainBoard.drawCaches();
+  listener.dispatchEvent(saveEvent);
 });
 
 const _movementButtons = {
@@ -58,20 +55,76 @@ const _movementButtons = {
   east: document.getElementById("east")!,
   west: document.getElementById("west")!,
 };
+const _controlButtons = {
+  sensor: document.getElementById("sensor")!,
+  reset: document.getElementById("reset")!,
+};
 
-_movementButtons.north.addEventListener(
+listener.addEventListener("player-moved", () => {
+  mainMap.panTo(player.position);
+  mainBoard.saveCaches();
+  mainBoard.clearCaches();
+  mainBoard.drawCaches();
+
+  mainBoard.addPointToPath(player.position);
+  mainBoard.drawPath();
+  listener.dispatchEvent(saveEvent);
+});
+
+_movementButtons.north.addEventListener("click", () => {
+  Pl.moveInDirection(player, SETTINGS.TILE_DEGREES, 0);
+  Pl.setMode(player, "static");
+});
+_movementButtons.south.addEventListener("click", () => {
+  Pl.moveInDirection(player, -SETTINGS.TILE_DEGREES, 0);
+  Pl.setMode(player, "static");
+});
+_movementButtons.east.addEventListener("click", () => {
+  Pl.moveInDirection(player, 0, SETTINGS.TILE_DEGREES);
+  Pl.setMode(player, "static");
+});
+_movementButtons.west.addEventListener("click", () => {
+  Pl.moveInDirection(player, 0, -SETTINGS.TILE_DEGREES);
+  Pl.setMode(player, "static");
+});
+
+_controlButtons.sensor.addEventListener(
   "click",
-  () => Pl.moveInDirection(player, SETTINGS.TILE_DEGREES, 0),
+  () => Pl.setMode(player, "follow"),
 );
-_movementButtons.south.addEventListener(
-  "click",
-  () => Pl.moveInDirection(player, -SETTINGS.TILE_DEGREES, 0),
-);
-_movementButtons.east.addEventListener(
-  "click",
-  () => Pl.moveInDirection(player, 0, SETTINGS.TILE_DEGREES),
-);
-_movementButtons.west.addEventListener(
-  "click",
-  () => Pl.moveInDirection(player, 0, -SETTINGS.TILE_DEGREES),
-);
+_controlButtons.reset.addEventListener("click", () => {
+  if (
+    confirm(
+      "Are you sure you want to reset all saved data? OK to reset, CANCEL to abort.",
+    )
+  ) {
+    listener.dispatchEvent(clearEvent);
+  }
+});
+
+listener.addEventListener("follow-player-true", () => {
+  mainMap.locate({ setView: true }).on("locationfound", (e) => {
+    Pl.moveToPosition(player, e.latlng);
+  });
+});
+
+listener.addEventListener("follow-player-false", () => {
+  mainMap.stopLocate();
+});
+
+listener.addEventListener("save-state", () => {
+  mainBoard.saveCaches();
+  mainBoard.saveData();
+  Pl.saveData(player);
+});
+listener.addEventListener("clear-state", () => {
+  mainBoard.clearData();
+  Pl.clearData(player);
+});
+
+//-------------------------------
+Pl.setMode(player, player.mode);
+listener.dispatchEvent(Pl.pointsChanged);
+mainBoard.drawCaches();
+mainBoard.drawPath();
+mainMap.panTo(player.position);

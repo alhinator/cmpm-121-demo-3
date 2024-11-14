@@ -10,12 +10,21 @@ export default class Board {
   private readonly visibleCaches: Map<string, Geocache>;
   private readonly savedCaches: Map<string, string>;
   private rectangles: leaflet.Rectangle[];
+  private pathPoints: leaflet.LatLng[];
+  private path: leaflet.Polyline;
   constructor(_m: leaflet.Map, _p: Player) {
-    this.visibleCaches = new Map<string, Geocache>();
-    this.savedCaches = new Map<string, string>();
-    this.rectangles = [];
-    this.map = _m;
     this.player = _p;
+    this.map = _m;
+
+    this.visibleCaches = new Map<string, Geocache>();
+    const data = this.loadData(this.player.position);
+    this.savedCaches = data[0];
+    this.pathPoints = data[1];
+    this.path = leaflet
+      .polyline(this.pathPoints, { color: "green" })
+      .addTo(this.map);
+
+    this.rectangles = [];
   }
 
   private getCanonicalCell(_c: Cell): Geocache {
@@ -73,12 +82,12 @@ export default class Board {
         .querySelector<HTMLButtonElement>("#take")!
         .addEventListener("click", () => {
           const gotten = _g.coins.pop();
+          _g.touched = true;
           if (gotten) {
             popupDiv.querySelector<HTMLSpanElement>(
               "#value",
             )!.innerHTML = _g.coins.length.toString();
             giveCoin(this.player, gotten);
-            _g.touched = true;
           }
         });
 
@@ -86,13 +95,13 @@ export default class Board {
       popupDiv
         .querySelector<HTMLButtonElement>("#give")!
         .addEventListener("click", () => {
+          _g.touched = true;
           const gotten = takeCoin(this.player);
           if (gotten) {
             popupDiv.querySelector<HTMLSpanElement>(
               "#value",
             )!.innerHTML = _g.coins.length.toString();
             _g.coins.push(gotten);
-            _g.touched = true;
           }
         });
 
@@ -104,6 +113,14 @@ export default class Board {
     _gs.forEach((element) => {
       this.drawAt(element);
     });
+  }
+  public drawPath() {
+    this.path = this.path.redraw();
+  }
+  public addPointToPath(_point: leaflet.LatLng) {
+    this.pathPoints.push(_point);
+    this.path.setLatLngs(this.pathPoints);
+    this.drawPath();
   }
   latLngToCell(_p: leaflet.LatLng): Cell {
     return this.getCanonicalCell({
@@ -144,7 +161,6 @@ export default class Board {
         this.savedCaches.set(key, element.toMemento());
       }
     });
-    console.log(this.savedCaches);
   }
   clearCaches() {
     this.visibleCaches.clear();
@@ -152,5 +168,56 @@ export default class Board {
       rect.remove();
     });
     this.rectangles = [];
+  }
+  clearPath() {
+    this.pathPoints = [];
+    this.path.setLatLngs(this.pathPoints);
+  }
+  loadData(
+    _fallbackPos: leaflet.LatLng,
+  ): [Map<string, string>, Array<leaflet.LatLng>] {
+    let savedMap: Map<string, string>;
+    let savedLocations: Array<leaflet.LatLng>;
+    if (localStorage.getItem("savedCaches") != null) {
+      const temp = JSON.parse(localStorage.getItem("savedCaches")!);
+      //array to map code edited from https://medium.com/codingbeauty-tutorials/javascript-convert-array-to-map-12907a8a334a
+      savedMap = new Map<string, string>(
+        temp.map((obj: string[]) => [obj[0], obj[1]]),
+      );
+    } else {
+      savedMap = new Map<string, string>();
+    }
+
+    if (localStorage.getItem("savedLocations")) {
+      savedLocations = JSON.parse(
+        localStorage.getItem("savedLocations")!,
+      );
+    } else {
+      savedLocations = [_fallbackPos];
+    }
+
+    return [savedMap, savedLocations];
+  }
+  saveData() {
+    //this code taken from https://www.geeksforgeeks.org/how-to-serialize-a-map-in-javascript/
+    const tmpMap = Array.from(this.savedCaches);
+    const serialized = JSON.stringify(tmpMap);
+    localStorage.setItem("savedCaches", serialized);
+    localStorage.setItem(
+      "savedLocations",
+      JSON.stringify(this.pathPoints),
+    );
+  }
+  clearData() {
+    localStorage.removeItem("savedCaches");
+
+    this.savedCaches.clear();
+    this.visibleCaches.clear();
+    this.clearCaches();
+    this.drawCaches();
+
+    localStorage.removeItem("savedLocations");
+    this.clearPath();
+    this.drawPath();
   }
 }
