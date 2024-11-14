@@ -91,10 +91,12 @@ _movementButtons.west.addEventListener("click", () => {
   Pl.setMode(player, "static");
 });
 
-_controlButtons.sensor.addEventListener(
-  "click",
-  () => Pl.setMode(player, "follow"),
-);
+_controlButtons.sensor.addEventListener("click", () => {
+  if (!(player.mode == "follow")) {
+    Pl.setMode(player, "follow");
+  }
+});
+
 _controlButtons.reset.addEventListener("click", () => {
   if (
     confirm(
@@ -106,12 +108,13 @@ _controlButtons.reset.addEventListener("click", () => {
 });
 
 listener.addEventListener("follow-player-true", () => {
-  mainMap.locate({ setView: true, watch: true }).on(
-    "locationfound",
-    (e) => {
-      Pl.moveToPosition(player, e.latlng);
-    },
-  );
+  mainMap.locate({ setView: true, watch: true });
+  mainMap.on("locationfound", (e) => {
+    Pl.moveToPosition(player, e.latlng);
+  });
+  mainMap.on("locationerror", () => {
+    alert("failed to get location.");
+  });
 });
 
 listener.addEventListener("follow-player-false", () => {
