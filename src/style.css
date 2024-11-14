@@ -78,6 +78,19 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+#coinable {
+  border-radius: 2px;
+  border: 1px solid transparent;
+  padding: 0.2em 0.4em;
+  font-size: 0.75em;
+  font-weight: 200;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  width: fit-content;
+}
 
 button:hover {
   border-color: #646cff;

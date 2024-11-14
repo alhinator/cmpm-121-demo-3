@@ -52,6 +52,18 @@ export function coinToString(_coin: Coin): string {
     _coin.serial
   );
 }
+export function coinArrayToString(_arr: Coin[]): string {
+  let retVal: string = "";
+
+  _arr.forEach((element) => {
+    retVal +=
+      `<button id=coinable og_row=${element.original.row} og_col=${element.original.col}>🥇${
+        coinToString(element)
+      }</button>`;
+  });
+
+  return retVal;
+}
 
 export function GeocacheToDisplayString(_geo: Geocache): string {
   return (

@@ -2,7 +2,7 @@ import leaflet from "leaflet";
 import luck from "./luck.ts";
 import { SETTINGS } from "./main.ts";
 import { giveCoin, Player, takeCoin } from "./player.ts";
-import { Cell, Geocache } from "./cell.ts";
+import { Cell, coinArrayToString, Geocache } from "./cell.ts";
 
 export default class Board {
   private map: leaflet.Map;
@@ -12,17 +12,19 @@ export default class Board {
   private rectangles: leaflet.Rectangle[];
   private pathPoints: leaflet.LatLng[];
   private path: leaflet.Polyline;
+  private popupClickEvent: Event;
   constructor(_m: leaflet.Map, _p: Player) {
     this.player = _p;
     this.map = _m;
+    this.popupClickEvent = new Event("popup-clicked");
 
     this.visibleCaches = new Map<string, Geocache>();
     const data = this.loadData(this.player.position);
     this.savedCaches = data[0];
     this.pathPoints = data[1];
-    this.path = leaflet
-      .polyline(this.pathPoints, { color: "green" })
-      .addTo(this.map);
+    this.path = leaflet.polyline(this.pathPoints, { color: "green" }).addTo(
+      this.map,
+    );
 
     this.rectangles = [];
   }
@@ -42,11 +44,7 @@ export default class Board {
     const retVal: Geocache[] = [];
     const origin = this.latLngToCell(point);
     for (let i = -SETTINGS.VISION_RANGE; i < SETTINGS.VISION_RANGE; i++) {
-      for (
-        let j = -SETTINGS.VISION_RANGE;
-        j < SETTINGS.VISION_RANGE;
-        j++
-      ) {
+      for (let j = -SETTINGS.VISION_RANGE; j < SETTINGS.VISION_RANGE; j++) {
         if (
           luck([origin.row + i, origin.col + j].toString()) <
             SETTINGS.CACHE_SPAWN_PROBABILITY
@@ -74,37 +72,84 @@ export default class Board {
       const popupDiv = document.createElement("div");
       popupDiv.innerHTML = `
                   <div>There is a cache here at "${_g.cell.col},${_g.cell.row}". It has <span id="value">${_g.coins.length}</span> coins inside.</div>
+                  <button id="coinToggler" verbosee="true">Show/Hide coins</button>
+                  <div id="coinDisplay"></div>
                   <button id="take">Take!</button>
                   <button id="give">Give!</button>`;
 
       // Clicking the TAKE button decrements the cache's value and increments the player's points
-      popupDiv
-        .querySelector<HTMLButtonElement>("#take")!
-        .addEventListener("click", () => {
+      popupDiv.querySelector<HTMLButtonElement>("#take")!.addEventListener(
+        "click",
+        () => {
           const gotten = _g.coins.pop();
           _g.touched = true;
           if (gotten) {
-            popupDiv.querySelector<HTMLSpanElement>(
-              "#value",
-            )!.innerHTML = _g.coins.length.toString();
+            popupDiv.querySelector<HTMLSpanElement>("#value")!.innerHTML = _g
+              .coins.length.toString();
             giveCoin(this.player, gotten);
+            popupDiv.dispatchEvent(this.popupClickEvent);
           }
-        });
+        },
+      );
 
       // Clicking the GIVE button decrements player's points & increments cache value.
-      popupDiv
-        .querySelector<HTMLButtonElement>("#give")!
-        .addEventListener("click", () => {
+      popupDiv.querySelector<HTMLButtonElement>("#give")!.addEventListener(
+        "click",
+        () => {
           _g.touched = true;
           const gotten = takeCoin(this.player);
           if (gotten) {
-            popupDiv.querySelector<HTMLSpanElement>(
-              "#value",
-            )!.innerHTML = _g.coins.length.toString();
+            popupDiv.querySelector<HTMLSpanElement>("#value")!.innerHTML = _g
+              .coins.length.toString();
             _g.coins.push(gotten);
+            popupDiv.dispatchEvent(this.popupClickEvent);
+          }
+        },
+      );
+
+      //Clicking the Show Coins toggles visibility of the coin list.
+      //clicking one of the coins brings you to its position.
+      popupDiv.querySelector<HTMLButtonElement>("#coinToggler")!
+        .addEventListener("click", () => {
+          const button = popupDiv.querySelector<HTMLButtonElement>(
+            "#coinToggler",
+          )!;
+          const verbosee = button.getAttribute("verbosee");
+          const list = popupDiv.querySelector<HTMLDivElement>("#coinDisplay")!;
+
+          if (verbosee == "true") {
+            list.style.setProperty("display", "none");
+            button.setAttribute("verbosee", "false");
+          } else {
+            list.style.setProperty("display", "block");
+            button.setAttribute("verbosee", "true");
           }
         });
 
+      popupDiv.addEventListener(this.popupClickEvent.type, () => {
+        const list = popupDiv.querySelector<HTMLDivElement>("#coinDisplay")!;
+
+        list.innerHTML = `<p>Contained Coins:</p>` +
+          coinArrayToString(_g.coins) + `<p>--------</p>`;
+        const coinClickables = list.querySelectorAll<HTMLButtonElement>(
+          "#coinable",
+        )!;
+        coinClickables.forEach((element) => {
+          element.addEventListener("click", () => {
+            const r = parseInt(element.getAttribute("og_row")!);
+            const c = parseInt(element.getAttribute("og_col")!);
+            console.log({ r, c });
+            this.map.panTo(
+              this.cellToLatLng({
+                row: r,
+                col: c,
+              }),
+            );
+          });
+        });
+      });
+      popupDiv.dispatchEvent(this.popupClickEvent);
+      popupDiv.querySelector<HTMLButtonElement>("#coinToggler")!.click();
       return popupDiv;
     });
   }
@@ -124,12 +169,8 @@ export default class Board {
   }
   latLngToCell(_p: leaflet.LatLng): Cell {
     return this.getCanonicalCell({
-      row: Math.floor(
-        (_p.lat - SETTINGS.center.lat) / SETTINGS.TILE_DEGREES,
-      ),
-      col: Math.floor(
-        (_p.lng - SETTINGS.center.lng) / SETTINGS.TILE_DEGREES,
-      ),
+      row: Math.floor((_p.lat - SETTINGS.center.lat) / SETTINGS.TILE_DEGREES),
+      col: Math.floor((_p.lng - SETTINGS.center.lng) / SETTINGS.TILE_DEGREES),
     }).cell;
   }
   cellToLatLng(_c: Cell): leaflet.LatLng {
@@ -189,9 +230,7 @@ export default class Board {
     }
 
     if (localStorage.getItem("savedLocations")) {
-      savedLocations = JSON.parse(
-        localStorage.getItem("savedLocations")!,
-      );
+      savedLocations = JSON.parse(localStorage.getItem("savedLocations")!);
     } else {
       savedLocations = [_fallbackPos];
     }
@@ -203,10 +242,7 @@ export default class Board {
     const tmpMap = Array.from(this.savedCaches);
     const serialized = JSON.stringify(tmpMap);
     localStorage.setItem("savedCaches", serialized);
-    localStorage.setItem(
-      "savedLocations",
-      JSON.stringify(this.pathPoints),
-    );
+    localStorage.setItem("savedLocations", JSON.stringify(this.pathPoints));
   }
   clearData() {
     localStorage.removeItem("savedCaches");
