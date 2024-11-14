@@ -106,7 +106,7 @@ _controlButtons.reset.addEventListener("click", () => {
 });
 
 listener.addEventListener("follow-player-true", () => {
-  mainMap.locate({ setView: true, watch: true, enableHighAccuracy: true }).on(
+  mainMap.locate({ setView: true, watch: true }).on(
     "locationfound",
     (e) => {
       Pl.moveToPosition(player, e.latlng);
