@@ -1,5 +1,5 @@
 import leaflet from "leaflet";
-import { listener, SETTINGS } from "./main.ts";
+import { listener, SETTINGS, player } from "./main.ts";
 import { Coin } from "./cell.ts";
 
 export interface Player {
@@ -14,7 +14,6 @@ export interface Player {
 // }
 
 export const pointsChanged: Event = new Event("points-changed");
-export const playerMoved: Event = new Event("player-moved");
 export const followMode: Event = new Event("follow-player-true");
 export const staticMode: Event = new Event("follow-player-false");
 
@@ -37,6 +36,28 @@ export function takeCoin(_p: Player) {
   }
   return retVal;
 }
+listener.addEventListener("move-north", () => {
+  moveInDirection(player, SETTINGS.TILE_DEGREES, 0);
+  setMode(player, "static");
+})
+
+listener.addEventListener("move-south", () => {
+  moveInDirection(player, -SETTINGS.TILE_DEGREES, 0);
+  setMode(player, "static");
+})
+
+listener.addEventListener("move-east", () => {
+  moveInDirection(player, 0, SETTINGS.TILE_DEGREES);
+  setMode(player, "static");
+})
+
+
+listener.addEventListener("move-east", () => {
+  moveInDirection(player, 0, -SETTINGS.TILE_DEGREES);
+  setMode(player, "static");
+})
+
+
 
 export function moveInDirection(
   _p: Player,
@@ -48,13 +69,11 @@ export function moveInDirection(
     _p.position.lng + deltaLng,
   );
   _p.marker.setLatLng(_p.position);
-  listener.dispatchEvent(playerMoved);
 }
 
 export function moveToPosition(_p: Player, _pos: leaflet.LatLng) {
   _p.position = _pos;
   _p.marker.setLatLng(_p.position);
-  listener.dispatchEvent(playerMoved);
 }
 
 export function setMode(_p: Player, _mode: "static" | "follow") {
@@ -73,7 +92,7 @@ export function loadData(): Player {
     ? JSON.parse(localStorage.getItem("playerCoins")!)
     : [];
   const md = localStorage.getItem("playerMode") == "static" ||
-      localStorage.getItem("playerMode") == "follow"
+    localStorage.getItem("playerMode") == "follow"
     ? (localStorage.getItem("playerMode")! as "static" | "follow")
     : "static";
   const pos = localStorage.getItem("playerPosition")

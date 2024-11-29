@@ -39,7 +39,7 @@ leaflet
   })
   .addTo(mainMap);
 
-const player: Pl.Player = Pl.generateNew(mainMap);
+export const player: Pl.Player = Pl.generateNew(mainMap);
 
 const mainBoard = new Board(mainMap, player);
 
@@ -74,21 +74,28 @@ listener.addEventListener("player-moved", () => {
   listener.dispatchEvent(saveEvent);
 });
 
+const moveNorth: Event = new Event("move-north");
+const moveSouth: Event = new Event("move-south");
+const moveEast: Event = new Event("move-east");
+const moveWest: Event = new Event("move-west");
+const playerMoved: Event = new Event("player-moved");
+
 _movementButtons.north.addEventListener("click", () => {
-  Pl.moveInDirection(player, SETTINGS.TILE_DEGREES, 0);
-  Pl.setMode(player, "static");
+  listener.dispatchEvent(moveNorth);
+  listener.dispatchEvent(playerMoved);
+
 });
 _movementButtons.south.addEventListener("click", () => {
-  Pl.moveInDirection(player, -SETTINGS.TILE_DEGREES, 0);
-  Pl.setMode(player, "static");
+  listener.dispatchEvent(moveSouth);
+  listener.dispatchEvent(playerMoved);
 });
 _movementButtons.east.addEventListener("click", () => {
-  Pl.moveInDirection(player, 0, SETTINGS.TILE_DEGREES);
-  Pl.setMode(player, "static");
+  listener.dispatchEvent(moveEast);
+  listener.dispatchEvent(playerMoved);
 });
 _movementButtons.west.addEventListener("click", () => {
-  Pl.moveInDirection(player, 0, -SETTINGS.TILE_DEGREES);
-  Pl.setMode(player, "static");
+  listener.dispatchEvent(moveWest);
+  listener.dispatchEvent(playerMoved);
 });
 
 _controlButtons.sensor.addEventListener("click", () => {
