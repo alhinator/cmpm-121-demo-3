@@ -11,15 +11,13 @@ export interface Player {
   mode: "static" | "follow";
 }
 
-export function generatePlayer(_map: leaflet.Map): Player {
+export function createNewPlayer(_map: leaflet.Map): Player {
   const tmp: Player = loadData();
   tmp.marker.bindTooltip("You!");
   tmp.marker.addTo(_map);
 
   assignListeners(tmp);
   setMode(tmp, tmp.mode);
-
-
   return tmp;
 }
 
