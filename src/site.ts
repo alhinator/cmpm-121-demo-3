@@ -1,5 +1,5 @@
 
-import { listener, events } from "./event";
+import { listener, events } from "./event.ts";
 import { coinArrayToString } from "./cell.ts";
 import { player, mainBoard } from "./main.ts";
 

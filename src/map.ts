@@ -1,6 +1,6 @@
 import leaflet from "leaflet";
-import { events, listener } from "./event";
-import { player } from "./main";
+import { events, listener } from "./event.ts";
+import { player } from "./main.ts";
 //Tunable params - all caps names are NOT required by leaflet conventions
 export const SETTINGS = {
     center: leaflet.latLng(0, 0),
