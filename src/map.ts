@@ -1,4 +1,4 @@
-import leaflet from "leaflet";
+import leaflet, { LeafletEvent, LeafletEventHandlerFn, LocationEvent } from "leaflet";
 import { events, listener } from "./event.ts";
 import { player } from "./main.ts";
 //Tunable params - all caps names are NOT required by leaflet conventions
@@ -34,7 +34,7 @@ export function makeMap(): leaflet.Map {
         listener.dispatchEvent(events.saveEvent);
     });
 
-    mainMap.on("locationfound", (e) => {
+    mainMap.on("locationfound", (e:LocationEvent) => {
         const playerLocated = new CustomEvent("player-located", { 'detail': e.latlng })
         listener.dispatchEvent(playerLocated)
     });
