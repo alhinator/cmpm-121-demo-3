@@ -1,8 +1,9 @@
 import leaflet from "leaflet";
 import luck from "./luck.ts";
-import { SETTINGS } from "./main.ts";
+import { SETTINGS } from "./map.ts";
 import { giveCoin, Player, takeCoin } from "./player.ts";
 import { Cell, coinArrayToString, Geocache } from "./cell.ts";
+import { listener } from "./event.ts";
 
 export default class Board {
   private map: leaflet.Map;
@@ -27,8 +28,29 @@ export default class Board {
     );
 
     this.rectangles = [];
-  }
 
+
+    this.assignListeners();
+
+  }
+  private assignListeners() {
+    listener.addEventListener("player-moved", () => {
+      this.saveCaches();
+      this.clearCaches();
+      this.drawCaches();
+      this.addPointToPath(this.player.position);
+      this.drawPath();
+    })
+
+    listener.addEventListener("save-state", () => {
+      this.saveCaches();
+      this.saveData();
+    });
+
+    listener.addEventListener("clear-state", () => {
+      this.clearData();
+    });
+  }
   private getCanonicalCell(_c: Cell): Geocache {
     const { row, col } = _c;
     const key = [row, col].toString();
@@ -47,7 +69,7 @@ export default class Board {
       for (let j = -SETTINGS.VISION_RANGE; j < SETTINGS.VISION_RANGE; j++) {
         if (
           luck([origin.row + i, origin.col + j].toString()) <
-            SETTINGS.CACHE_SPAWN_PROBABILITY
+          SETTINGS.CACHE_SPAWN_PROBABILITY
         ) {
           retVal.push(
             this.getCanonicalCell({

@@ -1,6 +1,8 @@
 import leaflet from "leaflet";
-import { listener, SETTINGS, player } from "./main.ts";
+import { player } from "./main.ts";
+import { SETTINGS } from "./map.ts";
 import { Coin } from "./cell.ts";
+import { listener, events } from "./event.ts";
 
 export interface Player {
   position: leaflet.LatLng;
@@ -13,9 +15,7 @@ export interface Player {
 //TODO
 // }
 
-export const pointsChanged: Event = new Event("points-changed");
-export const followMode: Event = new Event("follow-player-true");
-export const staticMode: Event = new Event("follow-player-false");
+
 
 export function generateNew(_map: leaflet.Map): Player {
   const tmp: Player = loadData();
@@ -26,17 +26,17 @@ export function generateNew(_map: leaflet.Map): Player {
 
 export function giveCoin(_p: Player, _coin: Coin) {
   _p.points.push(_coin);
-  listener.dispatchEvent(pointsChanged);
+  listener.dispatchEvent(events.pointsChanged);
 }
 
 export function takeCoin(_p: Player) {
   const retVal = _p.points.pop();
   if (retVal) {
-    listener.dispatchEvent(pointsChanged);
+    listener.dispatchEvent(events.pointsChanged);
   }
   return retVal;
 }
-export function assignMovementListeners() {
+export function assignListeners() {
   listener.addEventListener("move-north", () => {
     moveInDirection(player, SETTINGS.TILE_DEGREES, 0);
     setMode(player, "static");
@@ -56,6 +56,21 @@ export function assignMovementListeners() {
   listener.addEventListener("move-west", () => {
     moveInDirection(player, 0, -SETTINGS.TILE_DEGREES);
     setMode(player, "static");
+  });
+
+  listener.addEventListener("player-follow", () => {
+    if (!(player.mode == "follow")) {
+      setMode(player, "follow");
+    }
+  })
+  listener.addEventListener("player-located", (e: CustomEventInit<leaflet.LatLng>) => {
+    moveToPosition(player, e.detail!);
+  })
+  listener.addEventListener("save-state", () => {
+    saveData(player);
+  });
+  listener.addEventListener("clear-state", () => {
+    clearData(player);
   });
 }
 
@@ -82,8 +97,8 @@ export function moveToPosition(_p: Player, _pos: leaflet.LatLng) {
 export function setMode(_p: Player, _mode: "static" | "follow") {
   _p.mode = _mode;
   _p.mode == "follow"
-    ? listener.dispatchEvent(followMode)
-    : listener.dispatchEvent(staticMode);
+    ? listener.dispatchEvent(events.followMode)
+    : listener.dispatchEvent(events.staticMode);
 }
 export function saveData(_p: Player) {
   localStorage.setItem("playerCoins", JSON.stringify(_p.points));
@@ -120,5 +135,5 @@ export function clearData(_p: Player) {
   setMode(_p, "static");
   moveToPosition(_p, SETTINGS.PLAYER_START);
 
-  listener.dispatchEvent(pointsChanged);
+  listener.dispatchEvent(events.pointsChanged);
 }
