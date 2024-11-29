@@ -1,6 +1,6 @@
 // Using example imports
 // @deno-types="npm:@types/leaflet@^1.9.14"
-import * as Pl from "./player.ts";
+import * as PlayerController from "./player.ts";
 import Board from "./board.ts";
 import * as Map from "./map.ts";
 import * as Control from "./site.ts"
@@ -15,7 +15,7 @@ import "./leafletWorkaround.ts";
 
 const mainMap = Map.makeMap();
 
-export const player: Pl.Player = Pl.generateNew(mainMap);
+export const player:PlayerController.Player = PlayerController.generateNew(mainMap);
 
 export const mainBoard = new Board(mainMap, player);
 
@@ -25,7 +25,7 @@ Control.initButtons();
 
 //-------------------------------
 
-Pl.setMode(player, player.mode);
+PlayerController.setMode(player, player.mode);
 listener.dispatchEvent(events.pointsChanged);
 mainBoard.drawCaches();
 mainBoard.drawPath();
