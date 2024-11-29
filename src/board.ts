@@ -4,6 +4,7 @@ import { SETTINGS } from "./map.ts";
 import { giveCoin, Player, takeCoin } from "./player.ts";
 import { Cell, coinArrayToString, Geocache } from "./cell.ts";
 import { listener } from "./event.ts";
+import * as Storage from "./storage.ts";
 
 export default class Board {
   private map: leaflet.Map;
@@ -236,23 +237,26 @@ export default class Board {
     this.pathPoints = [];
     this.path.setLatLngs(this.pathPoints);
   }
-  loadData(
-    _fallbackPos: leaflet.LatLng,
-  ): [Map<string, string>, Array<leaflet.LatLng>] {
+
+  loadData(_fallbackPos: leaflet.LatLng): [Map<string, string>, Array<leaflet.LatLng>] {
     let savedMap: Map<string, string>;
     let savedLocations: Array<leaflet.LatLng>;
-    if (localStorage.getItem("savedCaches") != null) {
-      const temp = JSON.parse(localStorage.getItem("savedCaches")!);
+
+    const tmpCaches = Storage.load("savedCaches");
+    const tmpLocations = Storage.load("savedLocations");
+
+    if (tmpCaches != null) {
+      const caches = JSON.parse(tmpCaches);
       //array to map code edited from https://medium.com/codingbeauty-tutorials/javascript-convert-array-to-map-12907a8a334a
       savedMap = new Map<string, string>(
-        temp.map((obj: string[]) => [obj[0], obj[1]]),
+        caches.map((obj: string[]) => [obj[0], obj[1]]),
       );
     } else {
       savedMap = new Map<string, string>();
     }
 
-    if (localStorage.getItem("savedLocations")) {
-      savedLocations = JSON.parse(localStorage.getItem("savedLocations")!);
+    if (tmpLocations != null) {
+      savedLocations = JSON.parse(tmpLocations);
     } else {
       savedLocations = [_fallbackPos];
     }
@@ -263,18 +267,19 @@ export default class Board {
     //this code taken from https://www.geeksforgeeks.org/how-to-serialize-a-map-in-javascript/
     const tmpMap = Array.from(this.savedCaches);
     const serialized = JSON.stringify(tmpMap);
-    localStorage.setItem("savedCaches", serialized);
-    localStorage.setItem("savedLocations", JSON.stringify(this.pathPoints));
+    Storage.save("savedCaches", serialized);
+    Storage.save("savedLocations", JSON.stringify(this.pathPoints));
   }
   clearData() {
-    localStorage.removeItem("savedCaches");
-
+    Storage.remove("savedCaches");
+    Storage.remove("savedLocations");
+    
     this.savedCaches.clear();
     this.visibleCaches.clear();
     this.clearCaches();
     this.drawCaches();
 
-    localStorage.removeItem("savedLocations");
+
     this.clearPath();
     this.drawPath();
   }

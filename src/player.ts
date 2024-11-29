@@ -3,7 +3,6 @@ import { SETTINGS } from "./map.ts";
 import { Coin } from "./cell.ts";
 import { listener, events } from "./event.ts";
 import * as Storage from "./storage.ts";
-import { player } from "./main.ts";
 
 export interface Player {
   position: leaflet.LatLng;
