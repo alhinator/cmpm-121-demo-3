@@ -1,3 +1,4 @@
+import "./style.css";
 
 import { listener, events } from "./event.ts";
 import { coinArrayToString } from "./cell.ts";

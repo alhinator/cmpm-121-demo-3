@@ -9,7 +9,6 @@ import { listener, events } from "./event.ts";
 
 // Style sheets
 import "leaflet/dist/leaflet.css";
-import "./style.css";
 
 // Fix missing marker images
 import "./leafletWorkaround.ts";
