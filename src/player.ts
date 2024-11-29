@@ -1,22 +1,24 @@
-import leaflet, { point } from "leaflet";
+import leaflet from "leaflet";
 import { SETTINGS } from "./map.ts";
 import { Coin } from "./cell.ts";
 import { listener, events } from "./event.ts";
 import * as Storage from "./storage.ts";
 
-export interface Player {
+export default interface Player {
   position: leaflet.LatLng;
   points: Coin[];
   marker: leaflet.Marker;
   mode: "static" | "follow";
 }
 
-export function generateNew(_map: leaflet.Map): Player {
+export function generatePlayer(_map: leaflet.Map): Player {
   const tmp: Player = loadData();
   tmp.marker.bindTooltip("You!");
   tmp.marker.addTo(_map);
 
   assignListeners(tmp);
+  setMode(tmp, tmp.mode);
+
 
   return tmp;
 }

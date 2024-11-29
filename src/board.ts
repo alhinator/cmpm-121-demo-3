@@ -1,7 +1,7 @@
 import leaflet from "leaflet";
 import luck from "./luck.ts";
 import { SETTINGS } from "./map.ts";
-import { giveCoin, Player, takeCoin } from "./player.ts";
+import Player, { giveCoin, takeCoin } from "./player.ts";
 import { Cell, coinArrayToString, Geocache } from "./cell.ts";
 import { listener } from "./event.ts";
 import * as Storage from "./storage.ts";
@@ -273,7 +273,7 @@ export default class Board {
   clearData() {
     Storage.remove("savedCaches");
     Storage.remove("savedLocations");
-    
+
     this.savedCaches.clear();
     this.visibleCaches.clear();
     this.clearCaches();
