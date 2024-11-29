@@ -30,9 +30,7 @@ export default class Board {
 
     this.rectangles = [];
 
-
     this.assignListeners();
-
   }
   private assignListeners() {
     listener.addEventListener("player-moved", () => {
@@ -41,7 +39,7 @@ export default class Board {
       this.drawCaches();
       this.addPointToPath(this.player.position);
       this.drawPath();
-    })
+    });
 
     listener.addEventListener("save-state", () => {
       this.saveCaches();
@@ -70,7 +68,7 @@ export default class Board {
       for (let j = -SETTINGS.VISION_RANGE; j < SETTINGS.VISION_RANGE; j++) {
         if (
           luck([origin.row + i, origin.col + j].toString()) <
-          SETTINGS.CACHE_SPAWN_PROBABILITY
+            SETTINGS.CACHE_SPAWN_PROBABILITY
         ) {
           retVal.push(
             this.getCanonicalCell({
@@ -238,7 +236,9 @@ export default class Board {
     this.path.setLatLngs(this.pathPoints);
   }
 
-  loadData(_fallbackPos: leaflet.LatLng): [Map<string, string>, Array<leaflet.LatLng>] {
+  loadData(
+    _fallbackPos: leaflet.LatLng,
+  ): [Map<string, string>, Array<leaflet.LatLng>] {
     let savedMap: Map<string, string>;
     let savedLocations: Array<leaflet.LatLng>;
 
@@ -278,7 +278,6 @@ export default class Board {
     this.visibleCaches.clear();
     this.clearCaches();
     this.drawCaches();
-
 
     this.clearPath();
     this.drawPath();

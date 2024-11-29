@@ -1,7 +1,7 @@
 import leaflet from "leaflet";
 import { SETTINGS } from "./map.ts";
 import { Coin } from "./cell.ts";
-import { listener, events } from "./event.ts";
+import { events, listener } from "./event.ts";
 import * as Storage from "./storage.ts";
 
 export interface Player {
@@ -11,7 +11,7 @@ export interface Player {
   mode: "static" | "follow";
 }
 
-export function createNewPlayer(_map: leaflet.Map): Player {
+export function createNew(_map: leaflet.Map): Player {
   const tmp: Player = loadData();
   tmp.marker.bindTooltip("You!");
   tmp.marker.addTo(_map);
@@ -50,7 +50,6 @@ export function assignListeners(player: Player) {
     setMode(player, "static");
   });
 
-
   listener.addEventListener("move-west", () => {
     moveInDirection(player, 0, -SETTINGS.TILE_DEGREES);
     setMode(player, "static");
@@ -60,10 +59,13 @@ export function assignListeners(player: Player) {
     if (!(player.mode == "follow")) {
       setMode(player, "follow");
     }
-  })
-  listener.addEventListener("player-located", (e: CustomEventInit<leaflet.LatLng>) => {
-    moveToPosition(player, e.detail!);
-  })
+  });
+  listener.addEventListener(
+    "player-located",
+    (e: CustomEventInit<leaflet.LatLng>) => {
+      moveToPosition(player, e.detail!);
+    },
+  );
   listener.addEventListener("save-state", () => {
     saveData(player);
   });
@@ -71,9 +73,6 @@ export function assignListeners(player: Player) {
     clearData(player);
   });
 }
-
-
-
 
 export function moveInDirection(
   _p: Player,
@@ -104,14 +103,15 @@ export function saveData(_p: Player) {
   Storage.save("playerPosition", JSON.stringify(_p.position));
 }
 export function loadData(): Player {
-  const tempPoints = Storage.load("playerCoins")
+  const tempPoints = Storage.load("playerCoins");
   const pts = tempPoints ? JSON.parse(tempPoints) : [];
   const tmpMode = Storage.load("playerMode");
   const mode = tmpMode ? tmpMode as "static" | "follow" : "static";
 
   const tmpPos = Storage.load("playerPosition");
-  const pos = tmpPos ? JSON.parse(tmpPos) as leaflet.LatLng : SETTINGS.PLAYER_START;
-
+  const pos = tmpPos
+    ? JSON.parse(tmpPos) as leaflet.LatLng
+    : SETTINGS.PLAYER_START;
 
   return {
     position: pos,
