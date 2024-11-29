@@ -1,6 +1,7 @@
 // Using example imports
-// @deno-types="npm:@types/leaflet@^1.9.14"
-import generatePlayer from "./player.ts";
+//@deno-types="npm:@types/leaflet@^1.9.14"
+
+import { generatePlayer } from "./player.ts";
 import Board from "./board.ts";
 import * as Map from "./map.ts";
 import * as Control from "./site.ts"

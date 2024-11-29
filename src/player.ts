@@ -11,7 +11,7 @@ export interface Player {
   mode: "static" | "follow";
 }
 
-export default function generatePlayer(_map: leaflet.Map): Player {
+export function generatePlayer(_map: leaflet.Map): Player {
   const tmp: Player = loadData();
   tmp.marker.bindTooltip("You!");
   tmp.marker.addTo(_map);
