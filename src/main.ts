@@ -79,6 +79,8 @@ const moveSouth: Event = new Event("move-south");
 const moveEast: Event = new Event("move-east");
 const moveWest: Event = new Event("move-west");
 const playerMoved: Event = new Event("player-moved");
+Pl.assignMovementListeners();
+
 
 _movementButtons.north.addEventListener("click", () => {
   listener.dispatchEvent(moveNorth);

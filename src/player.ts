@@ -36,26 +36,29 @@ export function takeCoin(_p: Player) {
   }
   return retVal;
 }
-listener.addEventListener("move-north", () => {
-  moveInDirection(player, SETTINGS.TILE_DEGREES, 0);
-  setMode(player, "static");
-})
+export function assignMovementListeners() {
+  listener.addEventListener("move-north", () => {
+    moveInDirection(player, SETTINGS.TILE_DEGREES, 0);
+    setMode(player, "static");
+  });
 
-listener.addEventListener("move-south", () => {
-  moveInDirection(player, -SETTINGS.TILE_DEGREES, 0);
-  setMode(player, "static");
-})
+  listener.addEventListener("move-south", () => {
+    moveInDirection(player, -SETTINGS.TILE_DEGREES, 0);
+    setMode(player, "static");
+  });
 
-listener.addEventListener("move-east", () => {
-  moveInDirection(player, 0, SETTINGS.TILE_DEGREES);
-  setMode(player, "static");
-})
+  listener.addEventListener("move-east", () => {
+    moveInDirection(player, 0, SETTINGS.TILE_DEGREES);
+    setMode(player, "static");
+  });
 
 
-listener.addEventListener("move-east", () => {
-  moveInDirection(player, 0, -SETTINGS.TILE_DEGREES);
-  setMode(player, "static");
-})
+  listener.addEventListener("move-west", () => {
+    moveInDirection(player, 0, -SETTINGS.TILE_DEGREES);
+    setMode(player, "static");
+  });
+}
+
 
 
 
