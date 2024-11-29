@@ -21,7 +21,6 @@ export const mainBoard = new Board(mainMap, player);
 
 
 Control.initButtons();
-Pl.assignListeners();
 
 
 //-------------------------------

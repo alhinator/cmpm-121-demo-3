@@ -1,8 +1,9 @@
-import leaflet from "leaflet";
-import { player } from "./main.ts";
+import leaflet, { point } from "leaflet";
 import { SETTINGS } from "./map.ts";
 import { Coin } from "./cell.ts";
 import { listener, events } from "./event.ts";
+import * as Storage from "./storage.ts";
+import { player } from "./main.ts";
 
 export interface Player {
   position: leaflet.LatLng;
@@ -11,16 +12,13 @@ export interface Player {
   mode: "static" | "follow";
 }
 
-// export function getPosition(): leaflet.LatLng {
-//TODO
-// }
-
-
-
 export function generateNew(_map: leaflet.Map): Player {
   const tmp: Player = loadData();
   tmp.marker.bindTooltip("You!");
   tmp.marker.addTo(_map);
+
+  assignListeners(tmp);
+
   return tmp;
 }
 
@@ -36,7 +34,8 @@ export function takeCoin(_p: Player) {
   }
   return retVal;
 }
-export function assignListeners() {
+
+export function assignListeners(player: Player) {
   listener.addEventListener("move-north", () => {
     moveInDirection(player, SETTINGS.TILE_DEGREES, 0);
     setMode(player, "static");
@@ -101,34 +100,31 @@ export function setMode(_p: Player, _mode: "static" | "follow") {
     : listener.dispatchEvent(events.staticMode);
 }
 export function saveData(_p: Player) {
-  localStorage.setItem("playerCoins", JSON.stringify(_p.points));
-  localStorage.setItem("playerMode", _p.mode);
-  localStorage.setItem("playerPosition", JSON.stringify(_p.position));
+  Storage.save("playerCoins", JSON.stringify(_p.points));
+  Storage.save("playerMode", _p.mode);
+  Storage.save("playerPosition", JSON.stringify(_p.position));
 }
 export function loadData(): Player {
-  const pts = localStorage.getItem("playerCoins")
-    ? JSON.parse(localStorage.getItem("playerCoins")!)
-    : [];
-  const md = localStorage.getItem("playerMode") == "static" ||
-    localStorage.getItem("playerMode") == "follow"
-    ? (localStorage.getItem("playerMode")! as "static" | "follow")
-    : "static";
-  const pos = localStorage.getItem("playerPosition")
-    ? (JSON.parse(
-      localStorage.getItem("playerPosition")!,
-    ) as leaflet.LatLng)
-    : SETTINGS.PLAYER_START;
+  const tempPoints = Storage.load("playerCoins")
+  const pts = tempPoints ? JSON.parse(tempPoints) : [];
+  const tmpMode = Storage.load("playerMode");
+  const mode = tmpMode ? tmpMode as "static" | "follow" : "static";
+
+  const tmpPos = Storage.load("playerPosition");
+  const pos = tmpPos ? JSON.parse(tmpPos) as leaflet.LatLng : SETTINGS.PLAYER_START;
+
+
   return {
     position: pos,
     points: pts,
     marker: leaflet.marker(pos),
-    mode: md,
+    mode: mode,
   };
 }
 export function clearData(_p: Player) {
-  localStorage.removeItem("playerCoins");
-  localStorage.removeItem("playerMode");
-  localStorage.removeItem("playerPosition");
+  Storage.remove("playerCoins");
+  Storage.remove("playerMode");
+  Storage.remove("playerPosition");
 
   _p.points = [];
 
