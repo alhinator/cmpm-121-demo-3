@@ -1,7 +1,7 @@
 import leaflet from "leaflet";
 import luck from "./luck.ts";
 import { SETTINGS } from "./map.ts";
-import Player, { giveCoin, takeCoin } from "./player.ts";
+import { giveCoin, Player, takeCoin } from "./player.ts";
 import { Cell, coinArrayToString, Geocache } from "./cell.ts";
 import { listener } from "./event.ts";
 import * as Storage from "./storage.ts";

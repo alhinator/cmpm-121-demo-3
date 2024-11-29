@@ -1,6 +1,6 @@
 // Using example imports
 // @deno-types="npm:@types/leaflet@^1.9.14"
-import Player, {generatePlayer} from "./player.ts";
+import generatePlayer from "./player.ts";
 import Board from "./board.ts";
 import * as Map from "./map.ts";
 import * as Control from "./site.ts"
@@ -15,7 +15,7 @@ import "./leafletWorkaround.ts";
 
 const mainMap = Map.makeMap();
 
-export const player:Player = generatePlayer(mainMap);
+export const player = generatePlayer(mainMap);
 
 export const mainBoard = new Board(mainMap, player);
 
